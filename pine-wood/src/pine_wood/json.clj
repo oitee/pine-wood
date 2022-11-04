@@ -49,7 +49,8 @@
   (or (parse-log-1 log)
       (parse-log-2 log)
       (do (println "Error.")
-          (swap! counter assoc :failure (inc (:failure @counter))))))
+          (swap! counter assoc :failure (inc (:failure @counter)))
+          nil)))
 
 (defn do-stuff
   [source-file out-path]

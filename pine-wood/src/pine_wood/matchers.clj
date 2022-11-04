@@ -1,5 +1,11 @@
 (ns pine-wood.matchers
-  [:require [cheshire.core :as cc]])
+  [:require [cheshire.core :as cc]]
+  (:import java.time.LocalDateTime
+           java.time.format.DateTimeFormatter))
+
+(defn convert-timestamp [t]
+  (str (.format (LocalDateTime/parse t (DateTimeFormatter/ofPattern "yyyy-MM-dd'T'HH:mm:ss,SSS"))
+          (DateTimeFormatter/ofPattern "yyyy-MM-dd'T'HH:mm:ss,SSS")) "+0000"))
 
 (def matchers-1
   [[#"\[[\w-]+\]" :index (fn [s] (subs s 1 (dec (count s))))]
@@ -20,9 +26,9 @@
                                   (cc/parse-string)
                                   (cc/generate-string)))]])
 (def matchers-2
-  [[#"\[[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9][A-Z][0-9][0-9]:[0-9][0-9]:[0-9][0-9],[0-9][0-9][0-9]\]"
+  [[#"\[[^\]]+\]"
     :timestamp
-    (fn [s] (subs s 1 (dec (count s))))]
+    (fn [s] (convert-timestamp (subs s 1 (dec (count s)))))]
    [#"\[[\w]+ ]" :level (fn [s] (subs s 1 (- (count s) 2)))]
    [#"\[[\w.]+   " :component (fn [s]
                                 (as-> s s*
@@ -43,7 +49,7 @@
    [#"source\[.*\]" :source (fn [s]
                               (-> s
                                   (subs 7 (dec (count s)))
-                                  (clojure.string/replace  "\\\"" "\"")
+                                  ;;(clojure.string/replace  "\\\"" "\"")
                                   (cc/parse-string)
                                   (cc/generate-string)))]])
 (defn extract [line first-try?]
